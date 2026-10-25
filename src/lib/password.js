@@ -2,7 +2,9 @@ export const MIN_PASSWORD = 8
 export const MIN_PASSWORD_ANY = 15
 export const MAX_PASSWORD = 256
 
-export const PASSWORD_HINT = `Mínimo de ${MIN_PASSWORD_ANY} caracteres, ou ${MIN_PASSWORD} se incluir um número e uma letra minúscula.`
+export function passwordHint(t) {
+  return t('password.hint', { any: MIN_PASSWORD_ANY, min: MIN_PASSWORD })
+}
 
 /* Same rule as the API: long enough on its own, or shorter with a digit and a lowercase letter. */
 export function isValidPassword(password) {

@@ -1,9 +1,20 @@
-const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
-const decimal = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-const compact = new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 })
-const dateTime = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
-const time = new Intl.DateTimeFormat('pt-BR', { timeStyle: 'medium' })
-const relative = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' })
+let locale
+let currency, decimal, compact, dateTime, time, relative
+
+/* Called by I18nProvider whenever the interface language changes. Prices stay
+ * in BRL; only separators, dates and relative times follow the locale. */
+export function setFormatLocale(next) {
+  if (next === locale) return
+  locale = next
+  currency = new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL' })
+  decimal = new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  compact = new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 })
+  dateTime = new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short' })
+  time = new Intl.DateTimeFormat(locale, { timeStyle: 'medium' })
+  relative = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
+}
+
+setFormatLocale('pt-BR')
 
 const isNum = (value) => typeof value === 'number' && Number.isFinite(value)
 
@@ -11,7 +22,7 @@ export function brl(value, currencyCode = 'BRL') {
   if (!isNum(value)) return '—'
   if (currencyCode && currencyCode !== 'BRL') {
     try {
-      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: currencyCode }).format(value)
+      return new Intl.NumberFormat(locale, { style: 'currency', currency: currencyCode }).format(value)
     } catch {
       return `${decimal.format(value)} ${currencyCode}`
     }
@@ -75,4 +86,4 @@ export function parseSymbols(raw) {
   return [...seen]
 }
 
-export const FREQUENCY_LABELS = { off: 'Desligado', daily: 'Diário', weekly: 'Semanal', monthly: 'Mensal' }
+export const FREQUENCIES = ['off', 'daily', 'weekly', 'monthly']

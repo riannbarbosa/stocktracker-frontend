@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { api, setSession } from '../api/client.js'
+import { translate } from '../i18n/translate.js'
 
 const STORAGE_KEY = 'stocktracker.session'
 const AuthContext = createContext(null)
@@ -70,7 +71,7 @@ export function AuthProvider({ children }) {
 
   const start = useCallback(({ token, expiresIn }) => {
     const next = sessionFrom(token, expiresIn)
-    if (!next) throw new Error('Token inválido recebido da API.')
+    if (!next) throw new Error(translate('api.badToken'))
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
     setSessionState(next)
   }, [])

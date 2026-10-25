@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { ArrowDownRight, ArrowUpRight, Inbox, TrendingDown, TrendingUp, X } from 'lucide-react'
 import { percent } from '../lib/format.js'
+import { useI18n } from '../i18n/index.jsx'
 
 const LOGO_COLORS = ['#0a7a3d', '#0d6b6b', '#ec7000', '#cc092f', '#00579d', '#0086ff', '#1b3d8f', '#b59a00', '#7c3aed']
 
@@ -50,13 +51,15 @@ export function DirectionIcon({ direction, size = 16 }) {
 }
 
 export function DirectionPill({ direction }) {
+  const { t } = useI18n()
   const above = direction === 'above'
   const Icon = above ? TrendingUp : TrendingDown
-  return <span className={`pill ${above ? 'g' : 'r'}`}><Icon size={13} />{above ? 'Acima de' : 'Abaixo de'}</span>
+  return <span className={`pill ${above ? 'g' : 'r'}`}><Icon size={13} />{above ? t('common.above') : t('common.below')}</span>
 }
 
 export function Loading() {
-  return <div className="loading" role="status"><div className="spinner" /><span className="sr-only">Carregando…</span></div>
+  const { t } = useI18n()
+  return <div className="loading" role="status"><div className="spinner" /><span className="sr-only">{t('common.loading')}</span></div>
 }
 
 export function Empty({ icon: Icon = Inbox, title, children }) {
@@ -70,16 +73,18 @@ export function Empty({ icon: Icon = Inbox, title, children }) {
 }
 
 export function ErrorBox({ error, onRetry }) {
+  const { t } = useI18n()
   if (!error) return null
   return (
     <div className="alert-box error" role="alert">
       <span className="grow">{error.message}</span>
-      {onRetry && <button type="button" className="btn sm" onClick={() => onRetry()}>Tentar de novo</button>}
+      {onRetry && <button type="button" className="btn sm" onClick={() => onRetry()}>{t('common.retry')}</button>}
     </div>
   )
 }
 
 export function Modal({ title, description, onClose, children }) {
+  const { t } = useI18n()
   const titleId = useId()
   const ref = useRef(null)
   const onCloseRef = useRef(onClose)
@@ -114,7 +119,7 @@ export function Modal({ title, description, onClose, children }) {
       <div className="modal" role="dialog" aria-modal="true" aria-labelledby={titleId} ref={ref}>
         <div className="modal-head">
           <h3 id={titleId}>{title}</h3>
-          <button type="button" data-close className="iconbtn" style={{ marginLeft: 'auto' }} onClick={onClose} aria-label="Fechar">
+          <button type="button" data-close className="iconbtn" style={{ marginLeft: 'auto' }} onClick={onClose} aria-label={t('common.close')}>
             <X size={20} />
           </button>
         </div>

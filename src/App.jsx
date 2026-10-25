@@ -2,6 +2,7 @@ import { Fragment } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth/AuthContext.jsx'
 import { ToastProvider } from './components/Toasts.jsx'
+import { I18nProvider } from './i18n/index.jsx'
 import Layout from './components/Layout.jsx'
 import Login from './pages/Login.jsx'
 import ForgotPassword from './pages/ForgotPassword.jsx'
@@ -38,6 +39,7 @@ function PublicOnly({ children }) {
 
 export default function App() {
   return (
+    <I18nProvider>
     <BrowserRouter>
       <AuthProvider>
         <ToastProvider>
@@ -60,5 +62,6 @@ export default function App() {
         </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
+    </I18nProvider>
   )
 }
