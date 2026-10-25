@@ -1,3 +1,5 @@
+import { translate } from '../i18n/translate.js'
+
 const BASE_URL = (import.meta.env.VITE_API_URL ?? '/api').replace(/\/$/, '')
 
 export class ApiError extends Error {
@@ -8,12 +10,7 @@ export class ApiError extends Error {
 }
 
 /* Statuses whose API message is not meant for end users. */
-const FRIENDLY = {
-  429: 'Muitas requisições. Aguarde um instante e tente de novo.',
-  500: 'Erro interno da API. Tente novamente.',
-  502: 'O provedor de cotações está indisponível no momento. Tente novamente em instantes.',
-  503: 'A API está indisponível no momento.',
-}
+const FRIENDLY = new Set([429, 500, 502, 503])
 
 let token = null
 let onUnauthorized = () => {}
@@ -44,7 +41,7 @@ async function request(method, path, { body, query, auth = true } = {}) {
       body: body === undefined ? undefined : JSON.stringify(body),
     })
   } catch {
-    throw new ApiError(0, 'Não foi possível conectar à API.')
+    throw new ApiError(0, translate('api.network'))
   }
 
   if (response.status === 204) return null
@@ -56,7 +53,8 @@ async function request(method, path, { body, query, auth = true } = {}) {
      * (logout-all); /auth/login answers 401 for bad credentials, which is not
      * a reason to drop the session. */
     if (response.status === 401 && sentToken && sentToken === token) onUnauthorized()
-    throw new ApiError(response.status, FRIENDLY[response.status] ?? data?.message ?? data?.error ?? `Erro ${response.status}`)
+    const message = FRIENDLY.has(response.status) ? translate(`api.${response.status}`) : data?.message ?? data?.error
+    throw new ApiError(response.status, message ?? translate('api.status', { status: response.status }))
   }
   return data
 }

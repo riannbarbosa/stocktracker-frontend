@@ -3,7 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, KeyRound, Lock, TriangleAlert } from 'lucide-react'
 import { ApiError } from '../api/client.js'
 import { useAuth } from '../auth/AuthContext.jsx'
-import { MAX_PASSWORD, MIN_PASSWORD, PASSWORD_HINT, isValidPassword } from '../lib/password.js'
+import { MAX_PASSWORD, MIN_PASSWORD, isValidPassword, passwordHint } from '../lib/password.js'
+import { useI18n } from '../i18n/index.jsx'
 import AuthLayout, { AuthLogo } from '../components/AuthLayout.jsx'
 import { useToast } from '../components/Toasts.jsx'
 
@@ -11,6 +12,7 @@ import { useToast } from '../components/Toasts.jsx'
 export default function ResetPassword() {
   const { resetPassword } = useAuth()
   const toast = useToast()
+  const { t } = useI18n()
   const location = useLocation()
   const navigate = useNavigate()
   /* The e-mail link carries the token in the fragment (#token=…), which the
@@ -34,17 +36,17 @@ export default function ResetPassword() {
     setError('')
     setExpired(false)
     if (!isValidPassword(password)) {
-      setError(`A senha não atende aos requisitos. ${PASSWORD_HINT}`)
+      setError(t('password.invalid', { hint: passwordHint(t) }))
       return
     }
     if (password !== confirm) {
-      setError('As senhas não coincidem.')
+      setError(t('reset.mismatch'))
       return
     }
     setBusy(true)
     try {
       await resetPassword(token.trim(), password)
-      toast.ok('Senha redefinida. As outras sessões foram encerradas.')
+      toast.ok(t('reset.done'))
       navigate('/', { replace: true })
     } catch (err) {
       /* The password was checked above, so a 400 is the token: malformed,
@@ -59,12 +61,12 @@ export default function ResetPassword() {
     <AuthLayout>
       <form className="auth-box" onSubmit={onSubmit} noValidate>
         <AuthLogo />
-        <h3 style={{ fontSize: 24, marginBottom: 6 }}>Criar nova senha</h3>
-        <div className="muted">Depois de salvar, você entra direto e as sessões abertas em outros lugares são encerradas.</div>
+        <h3 style={{ fontSize: 24, marginBottom: 6 }}>{t('reset.title')}</h3>
+        <div className="muted">{t('reset.sub')}</div>
 
         {!linkToken && (
           <label className="field">
-            <span>Código do e-mail</span>
+            <span>{t('reset.code')}</span>
             <div className="input">
               <KeyRound size={16} />
               <input autoComplete="one-time-code" required value={token} onChange={(e) => setToken(e.target.value)} maxLength={128} spellCheck={false} />
@@ -72,7 +74,7 @@ export default function ResetPassword() {
           </label>
         )}
         <label className="field">
-          <span>Nova senha</span>
+          <span>{t('reset.newPassword')}</span>
           <div className="input">
             <Lock size={16} />
             <input
@@ -84,14 +86,14 @@ export default function ResetPassword() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <button type="button" className="reveal" onClick={() => setShowPassword((s) => !s)} aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}>
+            <button type="button" className="reveal" onClick={() => setShowPassword((s) => !s)} aria-label={showPassword ? t('password.hide') : t('password.show')}>
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
         </label>
-        <div className="hint">{PASSWORD_HINT}</div>
+        <div className="hint">{passwordHint(t)}</div>
         <label className="field">
-          <span>Confirme a nova senha</span>
+          <span>{t('reset.confirm')}</span>
           <div className="input">
             <Lock size={16} />
             <input
@@ -106,21 +108,21 @@ export default function ResetPassword() {
         </label>
 
         <button type="submit" className="btn primary block" style={{ marginTop: 22 }} disabled={busy || !token.trim() || !password || !confirm}>
-          {busy ? 'Aguarde…' : 'Salvar nova senha'}
+          {busy ? t('common.wait') : t('reset.save')}
         </button>
 
         {expired && (
           <div className="alert-box error" role="alert">
             <TriangleAlert size={16} />
             <span>
-              Este link é inválido, expirou ou já foi usado. <Link to="/esqueci-senha" className="link">Peça um novo</Link>.
+              {t('reset.expired', { link: <Link to="/esqueci-senha" className="link">{t('reset.requestNew')}</Link> })}
             </span>
           </div>
         )}
         {error && <div className="alert-box error" role="alert"><TriangleAlert size={16} />{error}</div>}
 
         <div className="muted" style={{ textAlign: 'center', marginTop: 22, fontSize: 13 }}>
-          <Link to="/login" className="link">Voltar para entrar</Link>
+          <Link to="/login" className="link">{t('forgot.back')}</Link>
         </div>
       </form>
     </AuthLayout>

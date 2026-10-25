@@ -3,10 +3,11 @@ import { AlarmClock, BellRing, CheckCheck, ChevronRight, Mail, Star } from 'luci
 import { api } from '../api/client.js'
 import { useAsync } from '../hooks/useAsync.js'
 import { useQuotes } from '../hooks/useQuotes.js'
-import { FREQUENCY_LABELS, brl, formatDateTime, formatTime, signed, timeAgo } from '../lib/format.js'
+import { brl, formatDateTime, formatTime, signed, timeAgo } from '../lib/format.js'
 import { ChangePill, DirectionIcon, Empty, ErrorBox, Loading, Ticker } from '../components/ui.jsx'
 import { useUnread } from '../components/UnreadContext.jsx'
 import { useToast } from '../components/Toasts.jsx'
+import { useI18n } from '../i18n/index.jsx'
 
 function Kpi({ icon: Icon, label, value, sub, text, style }) {
   return (
@@ -20,6 +21,7 @@ function Kpi({ icon: Icon, label, value, sub, text, style }) {
 
 export default function Dashboard() {
   const toast = useToast()
+  const { t } = useI18n()
   const { unread, refreshUnread } = useUnread()
   const watchlist = useAsync(() => api.watchlist())
   const alerts = useAsync(() => api.alerts(), [], { refreshMs: 60_000 })
@@ -50,27 +52,27 @@ export default function Dashboard() {
   return (
     <>
       <div className="kpis">
-        <Kpi icon={Star} label="Watchlist" value={watchlist.data ? symbols.length : '—'} sub={priced.length ? `${ups} em alta · ${priced.length - ups} em queda` : 'Nenhum ticker ainda'} />
-        <Kpi icon={AlarmClock} label="Alertas ativos" value={alerts.data ? active.length : '—'} sub={`${firedToday} disparado${firedToday === 1 ? '' : 's'} hoje`} />
-        <Kpi icon={BellRing} label="Não lidas" value={unread} style={{ color: unread ? '#38bdf8' : undefined }} sub={notifications.data?.[0] ? `Última ${timeAgo(notifications.data[0].createdAt)}` : 'Nada por aqui'} />
-        <Kpi icon={Mail} label="Resumo por e-mail" text value={digest.data ? FREQUENCY_LABELS[digest.data.frequency] : '—'} sub={digest.data?.lastSentAt ? `Último: ${formatDateTime(digest.data.lastSentAt)}` : 'Nenhum envio ainda'} />
+        <Kpi icon={Star} label={t('nav.watchlist')} value={watchlist.data ? symbols.length : '—'} sub={priced.length ? t('dashboard.upDown', { ups, downs: priced.length - ups }) : t('dashboard.noTickers')} />
+        <Kpi icon={AlarmClock} label={t('dashboard.activeAlerts')} value={alerts.data ? active.length : '—'} sub={t('dashboard.firedToday', { count: firedToday })} />
+        <Kpi icon={BellRing} label={t('dashboard.unread')} value={unread} style={{ color: unread ? '#38bdf8' : undefined }} sub={notifications.data?.[0] ? t('dashboard.latest', { when: timeAgo(notifications.data[0].createdAt) }) : t('dashboard.nothing')} />
+        <Kpi icon={Mail} label={t('dashboard.digest')} text value={digest.data ? t(`frequency.${digest.data.frequency}`) : '—'} sub={digest.data?.lastSentAt ? t('dashboard.lastSent', { when: formatDateTime(digest.data.lastSentAt) }) : t('dashboard.neverSent')} />
       </div>
 
       <div className="cols">
         <section className="card wide">
           <div className="h2">
-            Minha watchlist
-            {quotes.data && <span className="muted ht small" style={{ fontWeight: 400 }}>atualizado {formatTime(quotes.data.fetchedAt)}</span>}
-            <Link to="/watchlist" className="r btn sm">Ver tudo <ChevronRight size={14} /></Link>
+            {t('dashboard.myWatchlist')}
+            {quotes.data && <span className="muted ht small" style={{ fontWeight: 400 }}>{t('dashboard.updatedAt', { time: formatTime(quotes.data.fetchedAt) })}</span>}
+            <Link to="/watchlist" className="r btn sm">{t('dashboard.seeAll')} <ChevronRight size={14} /></Link>
           </div>
           <ErrorBox error={watchlist.error ?? quotes.error} onRetry={watchlist.error ? watchlist.reload : quotes.reload} />
           {watchlist.loading && !watchlist.data ? <Loading /> : symbols.length === 0 ? (
-            <Empty icon={Star} title="Sua watchlist está vazia">Adicione tickers em <Link to="/watchlist" className="link">Watchlist</Link>.</Empty>
+            <Empty icon={Star} title={t('dashboard.emptyWatchlist')}>{t('dashboard.emptyWatchlistHint', { link: <Link to="/watchlist" className="link">{t('nav.watchlist')}</Link> })}</Empty>
           ) : (
             <>
               <div className="table-wrap desk">
                 <table>
-                  <thead><tr><th>Ativo</th><th className="n">Preço</th><th className="n">Variação</th><th className="n">%</th></tr></thead>
+                  <thead><tr><th>{t('common.asset')}</th><th className="n">{t('dashboard.price')}</th><th className="n">{t('common.change')}</th><th className="n">%</th></tr></thead>
                   <tbody>
                     {rows.slice(0, 6).map((q) => (
                       <tr key={q.symbol}>
@@ -97,8 +99,8 @@ export default function Dashboard() {
 
         <section className="card narrow">
           <div className="h2">
-            Notificações recentes
-            {unread > 0 && <button type="button" className="r linkbtn" onClick={markAll}><CheckCheck size={14} />Marcar como lidas</button>}
+            {t('dashboard.recent')}
+            {unread > 0 && <button type="button" className="r linkbtn" onClick={markAll}><CheckCheck size={14} />{t('dashboard.markRead')}</button>}
           </div>
           <ErrorBox error={notifications.error} onRetry={notifications.reload} />
           {notifications.loading && !notifications.data ? <Loading /> : notifications.data?.length ? (
@@ -106,20 +108,20 @@ export default function Dashboard() {
               <Link to="/notificacoes" key={n.id} className="list-item">
                 <DirectionIcon direction={n.direction} />
                 <div className="grow">
-                  <b>{n.symbol}</b> {n.direction === 'above' ? 'subiu acima de' : 'caiu abaixo de'} {brl(n.targetPrice)}
-                  <div className="muted small">Preço: {brl(n.price)} · {timeAgo(n.createdAt)}</div>
+                  <b>{n.symbol}</b> {n.direction === 'above' ? t('dashboard.roseAbove') : t('dashboard.fellBelow')} {brl(n.targetPrice)}
+                  <div className="muted small">{t('dashboard.priceAt', { price: brl(n.price), when: timeAgo(n.createdAt) })}</div>
                 </div>
-                {!n.readAt && <span className="dot" style={{ background: '#38bdf8' }} aria-label="Não lida" />}
+                {!n.readAt && <span className="dot" style={{ background: '#38bdf8' }} aria-label={t('dashboard.unreadDot')} />}
               </Link>
             ))
-          ) : <Empty icon={BellRing} title="Nenhuma notificação">Elas aparecem quando um alerta dispara.</Empty>}
+          ) : <Empty icon={BellRing} title={t('dashboard.noNotifications')}>{t('common.triggerHint')}</Empty>}
 
           {best && worst && best !== worst && (
             <div className="hm">
-              <div className="h2" style={{ marginTop: 20 }}>Destaque do dia</div>
+              <div className="h2" style={{ marginTop: 20 }}>{t('dashboard.highlights')}</div>
               <div style={{ display: 'flex', gap: 12 }}>
-                <div className="card grow" style={{ padding: 12, background: 'var(--surface-2)' }}><div className="muted small">Maior alta</div><b>{best.symbol}</b> <ChangePill value={best.changePercent} /></div>
-                <div className="card grow" style={{ padding: 12, background: 'var(--surface-2)' }}><div className="muted small">Maior queda</div><b>{worst.symbol}</b> <ChangePill value={worst.changePercent} /></div>
+                <div className="card grow" style={{ padding: 12, background: 'var(--surface-2)' }}><div className="muted small">{t('dashboard.topGainer')}</div><b>{best.symbol}</b> <ChangePill value={best.changePercent} /></div>
+                <div className="card grow" style={{ padding: 12, background: 'var(--surface-2)' }}><div className="muted small">{t('dashboard.topLoser')}</div><b>{worst.symbol}</b> <ChangePill value={worst.changePercent} /></div>
               </div>
             </div>
           )}
