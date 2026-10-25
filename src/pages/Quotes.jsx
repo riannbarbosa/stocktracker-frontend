@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { AlarmClock, ArrowDownRight, ArrowUpRight, ChartLine, Search, Star, TrendingDown, TrendingUp } from 'lucide-react'
+import { AlarmClock, ArrowDownRight, ArrowUpRight, ChartLine, History, Search, Star, TrendingDown, TrendingUp, X } from 'lucide-react'
 import { api } from '../api/client.js'
 import { useAsync } from '../hooks/useAsync.js'
 import { useQuotes } from '../hooks/useQuotes.js'
+import { useSearchHistory } from '../hooks/useSearchHistory.js'
 import { MAX_SYMBOLS_PER_REQUEST, SYMBOL_REGEX, brl, compactNumber, formatDateTime, parseSymbols, signed, percent } from '../lib/format.js'
 import AlertForm from '../components/AlertForm.jsx'
 import { Empty, ErrorBox, Loading, Ticker } from '../components/ui.jsx'
@@ -32,6 +33,18 @@ export default function Quotes() {
   const setInput = setDraft
   const watchlist = useAsync(() => api.watchlist())
   const alerts = useAsync(() => api.alerts())
+  const { history, add: addToHistory, remove: removeFromHistory, clear: clearHistory } = useSearchHistory()
+
+  /* Only tickers that came back with a quote are kept, so typos stay out. */
+  const foundKey = found.join(',')
+  useEffect(() => {
+    if (foundKey) addToHistory(foundKey.split(','))
+  }, [foundKey, addToHistory])
+
+  const openSearch = (entry) => {
+    setParams({ s: entry })
+    setDraft(null)
+  }
 
   const quote = selected ? quotes.data?.bySymbol[selected] : null
   const inWatchlist = (watchlist.data ?? []).some((i) => i.symbol === selected)
@@ -88,6 +101,22 @@ export default function Quotes() {
           </div>
         )}
       </form>
+
+      {history.length > 0 && (
+        <div className="history">
+          <span className="muted small"><History size={14} />{t('quotes.recent')}</span>
+          {history.map((entry) => {
+            const label = entry.split(',').join(', ')
+            return (
+              <span key={entry} className={`chip hchip${entry === symbols.join(',') ? ' on' : ''}`}>
+                <button type="button" onClick={() => openSearch(entry)}>{label}</button>
+                <button type="button" className="x" onClick={() => removeFromHistory(entry)} aria-label={t('quotes.removeSearch', { search: label })}><X size={12} /></button>
+              </span>
+            )
+          })}
+          <button type="button" className="linkbtn" onClick={clearHistory}>{t('quotes.clearHistory')}</button>
+        </div>
+      )}
 
       <ErrorBox error={quotes.error} onRetry={quotes.reload} />
       {quotes.data?.missing.length > 0 && <div className="alert-box info" style={{ marginBottom: 16 }}>{t('common.noQuote', { symbols: quotes.data.missing.join(', ') })}</div>}

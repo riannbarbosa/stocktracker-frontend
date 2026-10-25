@@ -193,6 +193,9 @@ export default {
     currency: 'Moeda',
     assetAlerts: 'Alertas deste ativo',
     noAlerts: 'Nenhum alerta para {symbol}.',
+    recent: 'Pesquisas recentes',
+    removeSearch: 'Remover {search} do histórico',
+    clearHistory: 'Limpar histórico',
   },
   alerts: {
     all: 'Todos',

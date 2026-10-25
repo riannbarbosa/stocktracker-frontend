@@ -2,7 +2,7 @@
 
 Web interface (React 19 + Vite) for the [stocktracker-api](../stocktracker-api): a watchlist of B3 stocks, quotes, price alerts, notifications and an e-mail digest.
 
-The interface itself is in Brazilian Portuguese, and prices and dates are always formatted as `pt-BR`.
+The interface is available in Brazilian Portuguese and English. The language is picked from the browser on the first visit and can be switched on the sign-in pages and under Account (saved in `localStorage`). Numbers and dates follow the chosen language; prices are always in BRL. Messages that the API sends itself (validation errors, for example) are shown as the API wrote them.
 
 ## Running
 
@@ -40,7 +40,9 @@ src/
   auth/AuthContext.jsx   session (login, sign-up, expiry, logout across tabs)
   hooks/useAsync.js      loading + periodic refresh (only while the tab is visible)
   hooks/useQuotes.js     quotes in batches of 10; isolates unknown tickers (404)
-  lib/format.js          currency, number and date formatting (pt-BR)
+  hooks/useSearchHistory.js  recent quote searches, per account, in localStorage
+  i18n/                  translations (pt-BR.js, en.js), provider and translate()
+  lib/format.js          currency, number and date formatting (follows the language)
   lib/password.js        password rule shared by sign-up and reset
   components/            Layout (collapsible sidebar / bottom bar), AuthLayout, modal, toasts, AlertForm
   pages/                 Login, Forgot password, Reset password, Dashboard, Watchlist, Quotes,
@@ -60,6 +62,14 @@ src/
 | `/conta` | Account |
 
 Responsive layout: full sidebar above 1100px (collapsible, preference saved in `localStorage`), collapsed automatically on tablets, and replaced by a bottom tab bar below 640px. Icons: `lucide-react`.
+
+### Adding a language
+
+Copy `src/i18n/en.js`, translate the values, and register it in `LOCALES` and `LOCALE_NAMES` in `src/i18n/translate.js`. Keys missing from a language fall back to pt-BR. Routes stay in Portuguese (`/cotacoes`, `/alertas`, …) in every language.
+
+### Search history
+
+The quotes page lists the last 8 searches above the results. Only tickers that came back with a quote are saved, so typos stay out. History is stored in `localStorage` per account, so it is not shared across devices.
 
 ## Known limitations
 

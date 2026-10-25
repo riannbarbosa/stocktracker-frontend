@@ -193,6 +193,9 @@ export default {
     currency: 'Currency',
     assetAlerts: 'Alerts for this asset',
     noAlerts: 'No alerts for {symbol}.',
+    recent: 'Recent searches',
+    removeSearch: 'Remove {search} from history',
+    clearHistory: 'Clear history',
   },
   alerts: {
     all: 'All',
