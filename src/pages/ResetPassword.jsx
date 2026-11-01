@@ -47,7 +47,7 @@ export default function ResetPassword() {
     try {
       await resetPassword(token.trim(), password)
       toast.ok(t('reset.done'))
-      navigate('/', { replace: true })
+      navigate('/login', { replace: true })
     } catch (err) {
       /* The password was checked above, so a 400 is the token: malformed,
        * expired, used or superseded — the API does not say which. */
