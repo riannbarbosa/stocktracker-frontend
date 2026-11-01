@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeft, MailCheck, Mail, TriangleAlert } from 'lucide-react'
 import { ApiError, api } from '../api/client.js'
 import AuthLayout, { AuthLogo } from '../components/AuthLayout.jsx'
+import Turnstile, { captchaEnabled } from '../components/Turnstile.jsx'
 import { useI18n } from '../i18n/index.jsx'
 
 export default function ForgotPassword() {
@@ -13,6 +14,8 @@ export default function ForgotPassword() {
   const [error, setError] = useState('')
   const [notFound, setNotFound] = useState(false)
   const [busy, setBusy] = useState(false)
+  const captcha = useRef(null)
+  const [captchaToken, setCaptchaToken] = useState('')
 
   const onSubmit = async (event) => {
     event.preventDefault()
@@ -21,13 +24,15 @@ export default function ForgotPassword() {
     setSentTo('')
     setBusy(true)
     try {
-      await api.forgotPassword(email.trim())
+      await api.forgotPassword(email.trim(), captchaToken || undefined)
       setSentTo(email.trim())
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) setNotFound(true)
-      else if (err instanceof ApiError && err.status === 400) setError(t('forgot.badEmail'))
+      else if (err instanceof ApiError && err.status === 400) setError(captchaEnabled ? t('forgot.badEmailOrCaptcha') : t('forgot.badEmail'))
       else setError(err.message)
     } finally {
+      /* The token was spent on this attempt, and "send again" needs another. */
+      captcha.current?.reset()
       setBusy(false)
     }
   }
@@ -47,7 +52,9 @@ export default function ForgotPassword() {
           </div>
         </label>
 
-        <button type="submit" className="btn primary block" style={{ marginTop: 22 }} disabled={busy || !email.trim()}>
+        <Turnstile ref={captcha} onToken={setCaptchaToken} />
+
+        <button type="submit" className="btn primary block" style={{ marginTop: 22 }} disabled={busy || !email.trim() || (captchaEnabled && !captchaToken)}>
           {busy ? t('common.wait') : sentTo ? t('forgot.resend') : t('forgot.send')}
         </button>
 
@@ -61,7 +68,7 @@ export default function ForgotPassword() {
             <TriangleAlert size={16} />
             <span>
               {t('forgot.notFound')}{' '}
-              <Link to="/login" state={{ mode: 'register', email: email.trim() }} className="link">{t('login.register')}</Link>
+              <Link to="/signup" state={{ email: email.trim() }} className="link">{t('login.register')}</Link>
             </span>
           </div>
         )}

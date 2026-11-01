@@ -5,6 +5,7 @@ import { ToastProvider } from './components/Toasts.jsx'
 import { I18nProvider } from './i18n/index.jsx'
 import Layout from './components/Layout.jsx'
 import Login from './pages/Login.jsx'
+import Signup from './pages/Signup.jsx'
 import ForgotPassword from './pages/ForgotPassword.jsx'
 import ResetPassword from './pages/ResetPassword.jsx'
 import Dashboard from './pages/Dashboard.jsx'
@@ -45,6 +46,7 @@ export default function App() {
         <ToastProvider>
           <Routes>
             <Route path="/login" element={<PublicOnly><Login /></PublicOnly>} />
+            <Route path="/signup" element={<PublicOnly><Signup /></PublicOnly>} />
             <Route path="/esqueci-senha" element={<PublicOnly><ForgotPassword /></PublicOnly>} />
             {/* Not PublicOnly: the e-mail link must work even in a tab that is
               * still logged in, possibly as someone else. */}

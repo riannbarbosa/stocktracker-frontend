@@ -81,7 +81,7 @@ export function AuthProvider({ children }) {
     /* Neither signs in: both answer with a challenge that verifyCode redeems
      * together with the code the API e-mailed. */
     login: (email, password) => api.login(email, password),
-    register: (email, password) => api.register(email, password),
+    register: (email, password, captchaToken) => api.register(email, password, captchaToken),
     verifyCode: async (challenge, code) => start(await api.verifyCode(challenge, code)),
     /* The API revokes every older token on reset and signs nobody in, so the
      * tab's session, if any, is dead too: drop it and let the user sign in. */

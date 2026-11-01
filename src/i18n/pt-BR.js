@@ -104,6 +104,10 @@ export default {
     badCode: 'Código inválido ou expirado. Confira o e-mail ou peça um novo.',
     back: 'Voltar',
   },
+  signup: {
+    taken: 'Este e-mail já está cadastrado.',
+    badInputOrCaptcha: 'Verifique o e-mail e a senha informados e conclua a verificação anti-robô.',
+  },
   forgot: {
     title: 'Esqueceu a senha?',
     sub: 'Informe o e-mail da conta e enviaremos um link para criar uma nova.',
@@ -112,6 +116,7 @@ export default {
     sent: 'Enviamos o link para {email}. Ele chega em instantes.',
     notFound: 'Não encontramos uma conta com este e-mail.',
     badEmail: 'Informe um e-mail válido.',
+    badEmailOrCaptcha: 'Informe um e-mail válido e conclua a verificação anti-robô.',
     back: 'Voltar para entrar',
     haveCode: 'Já tenho o código',
   },

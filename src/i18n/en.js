@@ -104,6 +104,10 @@ export default {
     badCode: 'Invalid or expired code. Check the e-mail or ask for a new one.',
     back: 'Back',
   },
+  signup: {
+    taken: 'This e-mail is already registered.',
+    badInputOrCaptcha: 'Check the e-mail and password you entered and complete the bot check.',
+  },
   forgot: {
     title: 'Forgot your password?',
     sub: 'Enter your account e-mail and we will send you a link to create a new one.',
@@ -112,6 +116,7 @@ export default {
     sent: 'We sent the link to {email}. It will arrive shortly.',
     notFound: 'We could not find an account with this e-mail.',
     badEmail: 'Enter a valid e-mail.',
+    badEmailOrCaptcha: 'Enter a valid e-mail and complete the bot check.',
     back: 'Back to sign in',
     haveCode: 'I already have the code',
   },
