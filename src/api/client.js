@@ -62,6 +62,7 @@ async function request(method, path, { body, query, auth = true } = {}) {
 export const api = {
   login: (email, password) => request('POST', '/auth/login', { body: { email, password }, auth: false }),
   register: (email, password) => request('POST', '/auth/register', { body: { email, password }, auth: false }),
+  verifyCode: (challenge, code) => request('POST', '/auth/verify-code', { body: { challenge, code }, auth: false }),
   logoutAll: () => request('POST', '/auth/logout-all'),
   forgotPassword: (email) => request('POST', '/auth/forgot-password', { body: { email }, auth: false }),
   resetPassword: (token, password) => request('POST', '/auth/reset-password', { body: { token, password }, auth: false }),

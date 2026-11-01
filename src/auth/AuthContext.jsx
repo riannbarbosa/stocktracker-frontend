@@ -78,11 +78,17 @@ export function AuthProvider({ children }) {
 
   const value = useMemo(() => ({
     session,
-    login: async (email, password) => start(await api.login(email, password)),
-    register: async (email, password) => start(await api.register(email, password)),
-    /* The API revokes every older token on reset and returns a fresh one, so
-     * this replaces whatever session the tab had. */
-    resetPassword: async (token, password) => start(await api.resetPassword(token, password)),
+    /* Neither signs in: both answer with a challenge that verifyCode redeems
+     * together with the code the API e-mailed. */
+    login: (email, password) => api.login(email, password),
+    register: (email, password) => api.register(email, password),
+    verifyCode: async (challenge, code) => start(await api.verifyCode(challenge, code)),
+    /* The API revokes every older token on reset and signs nobody in, so the
+     * tab's session, if any, is dead too: drop it and let the user sign in. */
+    resetPassword: async (token, password) => {
+      await api.resetPassword(token, password)
+      logout()
+    },
     logout,
   }), [session, start, logout])
 
